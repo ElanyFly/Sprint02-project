@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Scanner;
+import java.util.*;
 
 public class Calculator {
     Scanner scanner = new Scanner(System.in);
@@ -14,6 +11,8 @@ public class Calculator {
         for (int i = 1; i <= peopleCount; i++) {
             executeMenu(i);
         }
+
+        calculateResults();
     }
 
     private void executeMenu(int personCount) {
@@ -25,14 +24,12 @@ public class Calculator {
         while (true) {
 
             System.out.println("\nДля добавления товара, введите: Добавить");
-            System.out.println("Для завершения добавления товаров пользователя, введите: Завершить");
+            System.out.println("Для завершения добавления товаров введите: Завершить");
 
             String command = scanner.next();
 
             if (command.toLowerCase().contains("добавить")) {
                 productsList.add(executeAddProducts());
-            } else if (command.toLowerCase().contains("печать")) {
-                printArray(productsList);
             } else if (command.toLowerCase().contains("завершить")) {
                 System.out.println("Добавление товаров " + personCount + "-ого пользователя завершено.");
                 break;
@@ -51,7 +48,7 @@ public class Calculator {
     }
 
     public int askPeopleCount() {
-        int peopleCount= 0;
+        int peopleCount = 0;
         do {
             System.out.println("На сколько человек разделить счёт?");
             if (scanner.hasNextInt()) {
@@ -86,27 +83,33 @@ public class Calculator {
                 scanner.next();
                 System.out.println("Неправильно введена стоимость. Попробуйте снова.");
             }
-//            try {
-//                System.out.println("Введите цену:");
-//                productPrice = scanner.nextDouble();
-//            } catch (RuntimeException e) {
-//                scanner.next();
-//                System.out.println("Неправильно введена стоимость. Попробуйте снова.");
-//            }
         } while (productPrice <= 0);
 
         System.out.println("Товар \"" + productName + "\" успешно добавлен");
         return new ProductBought(productName, productPrice);
     }
 
-    private void printArray(ArrayList<ProductBought> productList) {
-        for (int i = 0; i < productList.size(); i++) {
-            String getName = productList.get(i).productName;
-            double getPrice = productList.get(i).price;
-            System.out.println(getName + "\t" + getPrice);
-        }
-    }
+    public void calculateResults() {
 
+        double totalSum = 0;
+        double personSum = 0;
+
+        String messageTemplate = "\t%s.....%.2f р.\n";
+
+        for (Map.Entry<User, ArrayList<ProductBought>> listEntry : billList.entrySet()) {
+            System.out.printf("\nПользователь %s. \n\tДобавленные товары: %n", listEntry.getKey().name);
+            for (int j = 0; j < listEntry.getValue().size(); j++) {
+                System.out.printf(messageTemplate,
+                        listEntry.getValue().get(j).productName,
+                        listEntry.getValue().get(j).price);
+                personSum = personSum + listEntry.getValue().get(j).price;
+            }
+            System.out.printf("Итого: %.2f" + " " + RubFormat.getRub(personSum) + "\n", personSum);
+            totalSum = totalSum + personSum;
+            personSum = 0;
+        }
+        System.out.printf("\nСумма всего чека: %.2f %n" + RubFormat.getRub(totalSum), totalSum);
+    }
 
 }
 
