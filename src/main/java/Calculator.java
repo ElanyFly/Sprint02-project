@@ -2,50 +2,43 @@ import java.util.*;
 
 public class Calculator {
     Scanner scanner = new Scanner(System.in);
-    HashMap<User, ArrayList<ProductBought>> billList = new HashMap<>();
+    private final ArrayList<ProductBought> productsList = new ArrayList<>();
+    private final String ADD_ITEM = "добавить";
+    private final String END_ADD_ITEM = "завершить";
 
     public void startCalculator() {
 
         int peopleCount = askPeopleCount();
-
-        for (int i = 1; i <= peopleCount; i++) {
-            executeMenu(i);
-        }
-
-        calculateResults();
+        executeMenu();
+        scanner.close();
+        calculateResults(peopleCount);
     }
 
-    private void executeMenu(int personCount) {
-
-        User user = userInput(personCount);
-
-        ArrayList<ProductBought> productsList = new ArrayList<>();
+    private void executeMenu() {
 
         while (true) {
 
-            System.out.println("\nДля добавления товара, введите: Добавить");
-            System.out.println("Для завершения добавления товаров введите: Завершить");
+            String command = commandRequest();
 
-            String command = scanner.next();
-
-            if (command.toLowerCase().contains("добавить")) {
-                productsList.add(executeAddProducts());
-            } else if (command.toLowerCase().contains("завершить")) {
-                System.out.println("Добавление товаров " + personCount + "-ого пользователя завершено.");
+            if (command.toLowerCase().contains(ADD_ITEM)) {
+                ProductBought productBought = executeAddProducts();
+                productsList.add(productBought);
+            } else if (command.toLowerCase().contains(END_ADD_ITEM)) {
+                System.out.println("Добавление товаров завершено.");
                 break;
             } else {
                 System.out.println("Неправильно введена команда, попробуйте снова.");
             }
         }
-        billList.put(user, productsList);
     }
 
-    private User userInput(int personCount) {
-        System.out.println("\nВведите имя " + personCount + "-ого пользователя: ");
-        String userName = scanner.next();
-        System.out.println("Добро пожаловать, " + userName + ".");
-        return new User(userName);
+    private String commandRequest() {
+        System.out.println("\nДля добавления товара, введите: Добавить");
+        System.out.println("Для завершения добавления товаров введите: Завершить");
+
+        return scanner.next();
     }
+
 
     public int askPeopleCount() {
         int peopleCount = 0;
@@ -89,27 +82,24 @@ public class Calculator {
         return new ProductBought(productName, productPrice);
     }
 
-    public void calculateResults() {
+    public void calculateResults(int peopleCount) {
 
         double totalSum = 0;
-        double personSum = 0;
+        double divideMoney;
 
         String messageTemplate = "\t%s.....%.2f р.\n";
 
-        for (Map.Entry<User, ArrayList<ProductBought>> listEntry : billList.entrySet()) {
-            System.out.printf("\nПользователь %s. \n\tДобавленные товары: %n", listEntry.getKey().name);
-            for (int j = 0; j < listEntry.getValue().size(); j++) {
-                System.out.printf(messageTemplate,
-                        listEntry.getValue().get(j).productName,
-                        listEntry.getValue().get(j).price);
-                personSum = personSum + listEntry.getValue().get(j).price;
-            }
-            System.out.printf("Итого: %.2f" + " " + RubFormat.getRub(personSum) + "\n", personSum);
-            totalSum = totalSum + personSum;
-            personSum = 0;
+        System.out.println("\nДобавленные товары: ");
+        for (int i = 0; i < productsList.size(); i++) {
+            String productName = productsList.get(i).productName;
+            double productPrice = productsList.get(i).price;
+            System.out.printf(messageTemplate, productName, productPrice);
+            totalSum = totalSum + productPrice;
         }
-        System.out.printf("\nСумма всего чека: %.2f %n" + RubFormat.getRub(totalSum), totalSum);
-    }
+        divideMoney = totalSum / peopleCount;
 
+        System.out.printf("\nСумма всего чека: %.2f " + RubFormat.getRub(totalSum) + "%n", totalSum);
+        System.out.printf("Каждый человек должен заплатить: %.2f " + RubFormat.getRub(divideMoney), divideMoney);
+    }
 }
 
